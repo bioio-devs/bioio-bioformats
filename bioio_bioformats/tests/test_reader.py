@@ -1,23 +1,17 @@
-# from typing import List, Tuple
+import pytest
 
-# import numpy as np
-# import pytest
-# from bioio_base import dimensions, exceptions, test_utilities
-# from ome_types import OME
+try:
+    bfj = pytest.importorskip("bioformats_jar")
+    bf_version = tuple(int(x) for x in str(bfj.__version__).split(".")[:2])
+except Exception:
+    bf_version = (6, 7)
 
-# from bioio_bioformats import Reader
+# bioformats changed their DICOM scene labeling scheme at some point
+SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
 
-# from ..biofile import BioFile
-# from .conftest import LOCAL_RESOURCES_DIR
 
-# try:
-#     bfj = pytest.importorskip("bioformats_jar")
-#     bf_version = tuple(int(x) for x in str(bfj.__version__).split(".")[:2])
-# except Exception:
-#     bf_version = (6, 7)
-
-# # bioformats changed their DICOM scene labeling scheme at some point
-# SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
+def test_null() -> None:
+    _ = 0
 
 
 # @pytest.mark.parametrize(
@@ -192,7 +186,8 @@
 #         (
 #             "Imaris-IMS_davemason_Convallaria_3C_1T_confocal.ims",
 #             "Imaris-IMS_davemason_Convallaria_3C_1T_confocal.ims Resolution Level 1",
-#             ("Imaris-IMS_davemason_Convallaria_3C_1T_confocal.ims Resolution Level 1",),
+#             ("Imaris-IMS_davemason_Conval
+# laria_3C_1T_confocal.ims Resolution Level 1",),
 #             (1, 3, 1, 1024, 1024),
 #             np.uint16,
 #             dimensions.DEFAULT_DIMENSION_ORDER,
@@ -442,7 +437,8 @@
 #     np.testing.assert_array_equal(
 #         bf_tiled.dask_data.shape, bf_fullplane.dask_data.shape
 #     )
-#     np.testing.assert_array_equal(bf_tiled.dask_data.chunksize, (1, 1, 1, 240, 240, 3))
+#     np.testing.assert_array_equal(bf_tiled.d
+# ask_data.chunksize, (1, 1, 1, 240, 240, 3))
 #     np.testing.assert_array_equal(
 #         bf_tiled_set.dask_data.chunksize, (1, 1, 1, 1024, 1024, 3)
 #     )
