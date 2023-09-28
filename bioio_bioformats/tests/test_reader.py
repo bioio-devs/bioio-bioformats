@@ -114,16 +114,16 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
         #     ["C1"],
         #     (None, 1.0833333333333333, 1.0833333333333333),
         # ),
-        # (
-        #     "s_1_t_1_c_2_z_1.lif",
-        #     "PEI_laminin_35k",
-        #     ("PEI_laminin_35k",),
-        #     (1, 2, 1, 2048, 2048),
-        #     np.uint16,
-        #     dimensions.DEFAULT_DIMENSION_ORDER,
-        #     ["Channel:0:0", "Channel:0:1"],  # not as nice as lif reader
-        #     (None, 0.325, 0.325),
-        # ),
+        (
+            "s_1_t_1_c_2_z_1.lif",
+            "PEI_laminin_35k",
+            ("PEI_laminin_35k",),
+            (1, 2, 1, 2048, 2048),
+            np.uint16,
+            dimensions.DEFAULT_DIMENSION_ORDER,
+            ["Channel:0:0", "Channel:0:1"],  # not as nice as lif reader
+            (None, 0.325, 0.325),
+        ),
         # (
         #     "ND2_aryeh_but3_cont200-1.nd2",
         #     "ND2_aryeh_but3_cont200-1.nd2 (series 1)",
