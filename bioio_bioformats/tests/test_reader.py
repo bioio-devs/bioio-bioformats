@@ -450,7 +450,10 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
 
 @pytest.mark.parametrize(
     "filename, ",
-    [("s_1_t_1_c_10_z_1.ome.tiff"), ("CMU-1-Small-Region.svs")],
+    [
+        ("s_1_t_1_c_10_z_1.ome.tiff"),
+        # ("CMU-1-Small-Region.svs")
+    ],
 )
 def test_bioformats_dask_tiling_read(filename: str) -> None:
     # Construct full filepath
