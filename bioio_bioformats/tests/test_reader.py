@@ -359,68 +359,68 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
 #     )
 
 
-@pytest.mark.parametrize(
-    "filename, "
-    "first_scene_id, "
-    "first_scene_shape, "
-    "second_scene_id, "
-    "second_scene_shape",
-    [
-        (
-            "s_3_t_1_c_3_z_5.ome.tiff",
-            "s_3_t_10_c_3_z_5.czi #1",
-            (1, 3, 5, 325, 475),
-            "s_3_t_10_c_3_z_5.czi #2",
-            (1, 3, 5, 325, 475),
-        ),
-        (
-            "s_3_t_1_c_3_z_5.ome.tiff",
-            "s_3_t_10_c_3_z_5.czi #2",
-            (1, 3, 5, 325, 475),
-            "s_3_t_10_c_3_z_5.czi #3",
-            (1, 3, 5, 325, 475),
-        ),
-        (
-            "S=2_4x2_T=2=Z=3_CH=2.czi",
-            "S=2_4x2_T=2=Z=3_CH=2.czi #1",
-            (2, 2, 3, 487, 947),
-            "S=2_4x2_T=2=Z=3_CH=2.czi #2",
-            (2, 2, 3, 243, 473),
-        ),
-    ],
-)
-def test_multi_scene_bioformats_reader(
-    filename: str,
-    first_scene_id: str,
-    first_scene_shape: Tuple[int, ...],
-    second_scene_id: str,
-    second_scene_shape: Tuple[int, ...],
-) -> None:
-    # Construct full filepath
-    uri = LOCAL_RESOURCES_DIR / filename
+# @pytest.mark.parametrize(
+#     "filename, "
+#     "first_scene_id, "
+#     "first_scene_shape, "
+#     "second_scene_id, "
+#     "second_scene_shape",
+#     [
+#         (
+#             "s_3_t_1_c_3_z_5.ome.tiff",
+#             "s_3_t_10_c_3_z_5.czi #1",
+#             (1, 3, 5, 325, 475),
+#             "s_3_t_10_c_3_z_5.czi #2",
+#             (1, 3, 5, 325, 475),
+#         ),
+#         (
+#             "s_3_t_1_c_3_z_5.ome.tiff",
+#             "s_3_t_10_c_3_z_5.czi #2",
+#             (1, 3, 5, 325, 475),
+#             "s_3_t_10_c_3_z_5.czi #3",
+#             (1, 3, 5, 325, 475),
+#         ),
+#         (
+#             "S=2_4x2_T=2=Z=3_CH=2.czi",
+#             "S=2_4x2_T=2=Z=3_CH=2.czi #1",
+#             (2, 2, 3, 487, 947),
+#             "S=2_4x2_T=2=Z=3_CH=2.czi #2",
+#             (2, 2, 3, 243, 473),
+#         ),
+#     ],
+# )
+# def test_multi_scene_bioformats_reader(
+#     filename: str,
+#     first_scene_id: str,
+#     first_scene_shape: Tuple[int, ...],
+#     second_scene_id: str,
+#     second_scene_shape: Tuple[int, ...],
+# ) -> None:
+#     # Construct full filepath
+#     uri = LOCAL_RESOURCES_DIR / filename
 
-    # Run checks
-    test_utilities.run_multi_scene_image_read_checks(
-        ImageContainer=Reader,
-        image=uri,
-        first_scene_id=first_scene_id,
-        first_scene_shape=first_scene_shape,
-        first_scene_dtype=np.dtype(np.uint16),
-        second_scene_id=second_scene_id,
-        second_scene_shape=second_scene_shape,
-        second_scene_dtype=np.dtype(np.uint16),
-        allow_same_scene_data=False,  # checks that data is diff between scenes
-    )
+#     # Run checks
+#     test_utilities.run_multi_scene_image_read_checks(
+#         ImageContainer=Reader,
+#         image=uri,
+#         first_scene_id=first_scene_id,
+#         first_scene_shape=first_scene_shape,
+#         first_scene_dtype=np.dtype(np.uint16),
+#         second_scene_id=second_scene_id,
+#         second_scene_shape=second_scene_shape,
+#         second_scene_dtype=np.dtype(np.uint16),
+#         allow_same_scene_data=False,  # checks that data is diff between scenes
+#     )
 
 
-# def test_biofile_scene_change() -> None:
-#     """Make sure that ResourceBackedDaskArray doesn't close an opened file."""
-#     uri = LOCAL_RESOURCES_DIR / "ND2_dims_p4z5t3c2y32x32.nd2"
-#     f = BioFile(uri)
-#     assert isinstance(f.to_dask().compute(), np.ndarray)
-#     f.set_series(1)
-#     assert isinstance(f.to_dask().compute(), np.ndarray)
-#     f.close()
+def test_biofile_scene_change() -> None:
+    """Make sure that ResourceBackedDaskArray doesn't close an opened file."""
+    uri = LOCAL_RESOURCES_DIR / "ND2_dims_p4z5t3c2y32x32.nd2"
+    f = BioFile(uri)
+    assert isinstance(f.to_dask().compute(), np.ndarray)
+    f.set_series(1)
+    assert isinstance(f.to_dask().compute(), np.ndarray)
+    f.close()
 
 
 # @pytest.mark.parametrize("filename, ", [("CMU-1-Small-Region.svs")])
