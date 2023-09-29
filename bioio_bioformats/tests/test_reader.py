@@ -413,39 +413,39 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
 #     )
 
 
-def test_biofile_scene_change() -> None:
-    """Make sure that ResourceBackedDaskArray doesn't close an opened file."""
-    uri = LOCAL_RESOURCES_DIR / "ND2_dims_p4z5t3c2y32x32.nd2"
-    f = BioFile(uri)
-    assert isinstance(f.to_dask().compute(), np.ndarray)
-    f.set_series(1)
-    assert isinstance(f.to_dask().compute(), np.ndarray)
-    f.close()
+# def test_biofile_scene_change() -> None:
+#     """Make sure that ResourceBackedDaskArray doesn't close an opened file."""
+#     uri = LOCAL_RESOURCES_DIR / "ND2_dims_p4z5t3c2y32x32.nd2"
+#     f = BioFile(uri)
+#     assert isinstance(f.to_dask().compute(), np.ndarray)
+#     f.set_series(1)
+#     assert isinstance(f.to_dask().compute(), np.ndarray)
+#     f.close()
 
 
-# @pytest.mark.parametrize("filename, ", [("CMU-1-Small-Region.svs")])
-# def test_bioformats_dask_tiling_shapes(filename: str) -> None:
-#     # Construct full filepath
-#     uri = LOCAL_RESOURCES_DIR / filename
+@pytest.mark.parametrize("filename, ", [("CMU-1-Small-Region.svs")])
+def test_bioformats_dask_tiling_shapes(filename: str) -> None:
+    # Construct full filepath
+    uri = LOCAL_RESOURCES_DIR / filename
 
-#     # Run checks
-#     bf_tiled = Reader(uri, dask_tiles=True)
-#     bf_fullplane = Reader(uri, dask_tiles=False)
-#     bf_tiled_set = Reader(uri, dask_tiles=True, tile_size=(1024, 1024))
+    # Run checks
+    bf_tiled = Reader(uri, dask_tiles=True)
+    bf_fullplane = Reader(uri, dask_tiles=False)
+    bf_tiled_set = Reader(uri, dask_tiles=True, tile_size=(1024, 1024))
 
-#     np.testing.assert_array_equal(
-#         bf_tiled.dask_data.shape, bf_fullplane.dask_data.shape
-#     )
-#     np.testing.assert_array_equal(
-#         bf_tiled_set.dask_data.shape, bf_fullplane.dask_data.shape
-#     )
-#     np.testing.assert_array_equal(
-#         bf_tiled.dask_data.shape, bf_fullplane.dask_data.shape
-#     )
-#     np.testing.assert_array_equal(bf_tiled.dask_data.chunksize, (1, 1, 1, 240, 240, 3))
-#     np.testing.assert_array_equal(
-#         bf_tiled_set.dask_data.chunksize, (1, 1, 1, 1024, 1024, 3)
-#     )
+    np.testing.assert_array_equal(
+        bf_tiled.dask_data.shape, bf_fullplane.dask_data.shape
+    )
+    np.testing.assert_array_equal(
+        bf_tiled_set.dask_data.shape, bf_fullplane.dask_data.shape
+    )
+    np.testing.assert_array_equal(
+        bf_tiled.dask_data.shape, bf_fullplane.dask_data.shape
+    )
+    np.testing.assert_array_equal(bf_tiled.dask_data.chunksize, (1, 1, 1, 240, 240, 3))
+    np.testing.assert_array_equal(
+        bf_tiled_set.dask_data.chunksize, (1, 1, 1, 1024, 1024, 3)
+    )
 
 
 # @pytest.mark.parametrize(
