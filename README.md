@@ -1,7 +1,7 @@
 # bioio-bioformats
 
-[![Build Status](https://github.com/bioio-devs/bioio-bioformats/workflows/CI/badge.svg)](https://github.com/bioio-devs/bioio-bioformats/actions)
-[![Documentation](https://github.com/bioio-devs/bioio-bioformats/workflows/Documentation/badge.svg)](https://bioio-devs.github.io/bioio-bioformats)
+[![Build Status](https://github.com/bioio-devs/bioio-bioformats/actions/workflows/ci.yml/badge.svg)](https://github.com/bioio-devs/bioio-bioformats/actions)
+[![Documentation](https://github.com/bioio-devs/bioio-bioformats/actions/workflows/docs.yml/badge.svg)](https://bioio-devs.github.io/bioio-bioformats)
 
 A BioIO reader for reading bioformats formatted images.
 
