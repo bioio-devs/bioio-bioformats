@@ -28,12 +28,12 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
   "bioio-base>=0.3.0",
-  "bioformats_jar", 
   "dask[array]>=2021.4.1",
   "fsspec>=2022.8.0",
   "numpy>=1.21",
   "ome-types>=0.3.4",
   "resource-backed-dask-array>=0.1.0",
+  "scyjava",
 ]
 
 [project.urls]
@@ -110,7 +110,7 @@ show_error_codes = true
 # https://gitlab.com/durko/flake8-pyprojecttoml
 [tool.flake8]
 max-line-length = 88
-ignore = "E203,E402,W291,W503"
+ignore = "E203,E231,E402,W291,W503"
 min-python-version = "3.9.0"
 per-file-ignores = [
   "__init__.py:F401",
