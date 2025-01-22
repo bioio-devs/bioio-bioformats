@@ -10,9 +10,8 @@ from xml.etree import ElementTree as ET
 
 import jpype
 import numpy as np
-from bioformats_jar import get_loci
+import scyjava
 from bioio_base import dimensions, types
-from jgo.jgo import ExecutableNotFound
 from ome_types import OME
 
 ###############################################################################
@@ -662,8 +661,9 @@ set JAVA_HOME=%CONDA_PREFIX%\\Library
 
 def _try_get_loci() -> jpype.JPackage:
     try:
-        return get_loci()
-    except ExecutableNotFound as e:
-        raise RuntimeError(MAVEN_ERROR_MSG) from e
+        scyjava.config.endpoints.append("ome:formats-gpl:6.7.0")
+        scyjava.start_jvm()
+        loci = jpype.JPackage("loci")
+        return loci
     except jpype.JVMNotFoundException as e:
         raise RuntimeError(JAVA_ERROR_MSG) from e
