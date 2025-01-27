@@ -5,19 +5,11 @@ import pytest
 from bioio_base import dimensions, exceptions, test_utilities
 from ome_types import OME
 
+
 from bioio_bioformats import Reader
 
 from ..biofile import BioFile
 from .conftest import LOCAL_RESOURCES_DIR
-
-try:
-    bfj = pytest.importorskip("bioformats_jar")
-    bf_version = tuple(int(x) for x in str(bfj.__version__).split(".")[:2])
-except Exception:
-    bf_version = (6, 7)
-
-# bioformats changed their DICOM scene labeling scheme at some point
-SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
 
 
 @pytest.mark.parametrize(
@@ -211,8 +203,8 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
         ),
         (
             "DICOM_samples_MR-MONO2-8-16x-heart.dcm",
-            SERIES_0,
-            (SERIES_0,),
+            "Series 0",
+            ("Series 0",),
             (1, 1, 16, 256, 256),
             np.uint8,
             dimensions.DEFAULT_DIMENSION_ORDER,
