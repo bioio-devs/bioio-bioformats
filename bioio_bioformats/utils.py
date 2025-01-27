@@ -11,8 +11,8 @@ from xml.etree import ElementTree as ET
 import jpype
 import numpy as np
 import scyjava
-from jgo.jgo import ExecutableNotFound
 from bioio_base import dimensions, types
+from jgo.jgo import ExecutableNotFound
 from ome_types import OME
 
 ###############################################################################
@@ -668,6 +668,6 @@ def _try_get_loci() -> jpype.JPackage:
         return loci
     except ExecutableNotFound as e:
         raise RuntimeError(MAVEN_ERROR_MSG) from e
-    
+
     except jpype.JVMNotFoundException as e:
         raise RuntimeError(JAVA_ERROR_MSG) from e

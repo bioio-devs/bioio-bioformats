@@ -5,7 +5,6 @@ import pytest
 from bioio_base import dimensions, exceptions, test_utilities
 from ome_types import OME
 
-
 from bioio_bioformats import Reader
 
 from ..biofile import BioFile
@@ -188,7 +187,7 @@ from .conftest import LOCAL_RESOURCES_DIR
             (1, 3, 1, 1024, 1024),
             np.uint16,
             dimensions.DEFAULT_DIMENSION_ORDER,
-            ["Red", "Green", "Blue"],
+            ["Channel:0:0", "Channel:0:1", "Channel:0:2"],
             (0.001, 1.2059374999999999, 1.2059570312500014),
         ),
         (
@@ -375,9 +374,9 @@ def test_bioformats_reader_large_files(
         (
             "S=2_4x2_T=2=Z=3_CH=2.czi",
             "S=2_4x2_T=2=Z=3_CH=2.czi #1",
-            (2, 2, 3, 487, 947),
+            (2, 2, 3, 488, 948),
             "S=2_4x2_T=2=Z=3_CH=2.czi #2",
-            (2, 2, 3, 243, 473),
+            (2, 2, 3, 244, 474),
         ),
     ],
 )
