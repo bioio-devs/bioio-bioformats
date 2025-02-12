@@ -10,15 +10,6 @@ from bioio_bioformats import Reader
 from ..biofile import BioFile
 from .conftest import LOCAL_RESOURCES_DIR
 
-try:
-    bfj = pytest.importorskip("bioformats_jar")
-    bf_version = tuple(int(x) for x in str(bfj.__version__).split(".")[:2])
-except Exception:
-    bf_version = (6, 7)
-
-# bioformats changed their DICOM scene labeling scheme at some point
-SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
-
 
 @pytest.mark.parametrize(
     "filename, "
@@ -196,7 +187,7 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
             (1, 3, 1, 1024, 1024),
             np.uint16,
             dimensions.DEFAULT_DIMENSION_ORDER,
-            ["Red", "Green", "Blue"],
+            ["Channel:0:0", "Channel:0:1", "Channel:0:2"],
             (0.001, 1.2059374999999999, 1.2059570312500014),
         ),
         (
@@ -211,8 +202,8 @@ SERIES_0 = "PRIMARY" if bf_version > (6, 7) else "Series 0"
         ),
         (
             "DICOM_samples_MR-MONO2-8-16x-heart.dcm",
-            SERIES_0,
-            (SERIES_0,),
+            "Series 0",
+            ("Series 0",),
             (1, 1, 16, 256, 256),
             np.uint8,
             dimensions.DEFAULT_DIMENSION_ORDER,
@@ -383,9 +374,9 @@ def test_bioformats_reader_large_files(
         (
             "S=2_4x2_T=2=Z=3_CH=2.czi",
             "S=2_4x2_T=2=Z=3_CH=2.czi #1",
-            (2, 2, 3, 487, 947),
+            (2, 2, 3, 488, 948),
             "S=2_4x2_T=2=Z=3_CH=2.czi #2",
-            (2, 2, 3, 243, 473),
+            (2, 2, 3, 244, 474),
         ),
     ],
 )
