@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/bioio-devs/bioio-bioformats/actions/workflows/ci.yml/badge.svg)](https://github.com/bioio-devs/bioio-bioformats/actions)
 [![PyPI version](https://badge.fury.io/py/bioio-bioformats.svg)](https://badge.fury.io/py/bioio-bioformats)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9,3.10,3.11-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Python 3.10–3.13](https://img.shields.io/badge/python-3.10--3.13-blue.svg)](https://www.python.org/downloads/)
 
 A BioIO reader plugin for reading [many file formats like as seen here](https://docs.openmicroscopy.org/bio-formats/5.8.2/supported-formats.html) using `bioformats`
 
