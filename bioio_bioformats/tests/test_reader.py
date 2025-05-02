@@ -69,6 +69,17 @@ from .conftest import LOCAL_RESOURCES_DIR
             ["EGFP", "TaRFP", "Bright"],
             (1.0, 1.0833333333333333, 1.0833333333333333),
         ),
+        pytest.param(  # missing file
+            "doesNotExist.txt",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            marks=pytest.mark.xfail(raises=FileNotFoundError),
+        ),
         pytest.param(
             "example.txt",
             None,
