@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 from functools import cached_property
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -14,6 +15,7 @@ from . import utils
 from .biofile import BioFile
 
 ###############################################################################
+log = logging.getLogger(__name__)
 
 
 class Reader(reader.Reader):
@@ -91,17 +93,23 @@ class Reader(reader.Reader):
         -------
         is_supported: bool
             True if the file is supported by bioformats, false otherwise
-
         Notes
-        -----
-        Throw an exception if the file is not supported by bioformats.
-        As of 2025-05-01, bio handles that and logs appropriately.
+        logs warnings with as much information as is available as to why the file is
+        not supported.
         """
-        if not isinstance(fs, LocalFileSystem):
-            raise ValueError("Cannot read Bioformats from non-local file system.")
-        f = BioFile(path, meta=False, memoize=False)
-        f.close()
-        return True
+        try:
+            if not isinstance(fs, LocalFileSystem):
+                log.warning("Cannot read files from non-local file system.")
+                return False
+            f = BioFile(path, meta=False, memoize=False)
+            f.close()
+            return True
+        except Exception as e:
+            log.warning(
+                f"Exception raised while checking if {path} is supported by bioformats."
+            )
+            log.exception(e)
+            return False
 
     def __init__(
         self,
