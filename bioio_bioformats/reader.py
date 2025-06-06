@@ -97,19 +97,22 @@ class Reader(reader.Reader):
         logs warnings with as much information as is available as to why the file is
         not supported.
         """
+        errors = []
         try:
-            if not isinstance(fs, LocalFileSystem):
-                log.warning("Cannot read files from non-local file system.")
-                return False
-            f = BioFile(path, meta=False, memoize=False)
-            f.close()
-            return True
+            if isinstance(fs, LocalFileSystem):
+                f = BioFile(path, meta=False, memoize=False)
+                f.close()
+                return True
+            errors.append("Cannot read files from non-local file system.")
         except Exception as e:
-            log.warning(
-                f"Exception raised while checking if {path} is supported by bioformats."
+            errors.append(
+                "Exception raised while checking if file is supported by bioformats."
             )
-            log.exception(e)
-            return False
+            errors.append(str(e))
+
+        raise exceptions.UnsupportedFileFormatError(
+            reader_name="bioformats ", path=path, msg_extra=", ".join(errors)
+        )
 
     def __init__(
         self,
