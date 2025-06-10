@@ -92,7 +92,7 @@ class Reader(reader.Reader):
         Returns
         -------
         is_supported: bool
-            True if the file is supported by bioformats, false otherwise
+            True if the file is supported by bioformats, exception with error otherwise
         Notes
         logs warnings with as much information as is available as to why the file is
         not supported.
