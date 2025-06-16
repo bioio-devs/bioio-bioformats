@@ -86,15 +86,26 @@ class Reader(reader.Reader):
 
     @staticmethod
     def _is_supported_image(fs: AbstractFileSystem, path: str, **kwargs: Any) -> bool:
+        """
+        Returns
+        -------
+        is_supported: bool
+            True if the file is supported by bioformats, exception with error otherwise
+        """
         try:
-            if not isinstance(fs, LocalFileSystem):
-                return False
-            f = BioFile(path, meta=False, memoize=False)
-            f.close()
-            return True
-
-        except Exception:
-            return False
+            if isinstance(fs, LocalFileSystem):
+                f = BioFile(path, meta=False, memoize=False)
+                f.close()
+                return True
+            raise exceptions.UnsupportedFileFormatError(
+                reader_name="bioformats ",
+                path=path,
+                msg_extra="must be local file system",
+            )
+        except Exception as e:
+            raise exceptions.UnsupportedFileFormatError(
+                reader_name="bioformats ", path=path, msg_extra=str(e)
+            )
 
     def __init__(
         self,
