@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 from functools import cached_property
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -15,7 +14,6 @@ from . import utils
 from .biofile import BioFile
 
 ###############################################################################
-log = logging.getLogger(__name__)
 
 
 class Reader(reader.Reader):
@@ -93,9 +91,6 @@ class Reader(reader.Reader):
         -------
         is_supported: bool
             True if the file is supported by bioformats, exception with error otherwise
-        Notes
-        logs warnings with as much information as is available as to why the file is
-        not supported.
         """
         try:
             if isinstance(fs, LocalFileSystem):
