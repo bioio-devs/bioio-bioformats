@@ -197,9 +197,11 @@ class Reader(reader.Reader):
 
         return xr.DataArray(
             image_data,
-            dims=dimensions.DEFAULT_DIMENSION_ORDER_LIST_WITH_SAMPLES
-            if rdr.core_meta.is_rgb
-            else dimensions.DEFAULT_DIMENSION_ORDER_LIST,
+            dims=(
+                dimensions.DEFAULT_DIMENSION_ORDER_LIST_WITH_SAMPLES
+                if rdr.core_meta.is_rgb
+                else dimensions.DEFAULT_DIMENSION_ORDER_LIST
+            ),
             coords=coords,
             attrs={
                 constants.METADATA_UNPROCESSED: rdr.ome_xml,

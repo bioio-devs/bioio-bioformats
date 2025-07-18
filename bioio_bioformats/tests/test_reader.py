@@ -425,7 +425,7 @@ def test_biofile_scene_change() -> None:
     f.close()
 
 
-@pytest.mark.parametrize("filename, ", [("CMU-1-Small-Region.svs")])
+@pytest.mark.parametrize("filename, ", ["CMU-1-Small-Region.svs"])
 def test_bioformats_dask_tiling_shapes(filename: str) -> None:
     # Construct full filepath
     uri = LOCAL_RESOURCES_DIR / filename
