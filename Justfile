@@ -22,13 +22,15 @@ clean:
 # install with all deps
 install:
 	pip install -e .[lint,test]
-	pre-commit install
 
-# install dependencies, setup pre-commit, download test resources
+# install dependencies and setup pre-commit
 setup-dev:
 	just install
 	pre-commit install
-	python scripts/download_test_resources.py
+
+# run performance tests
+benchmark:
+	python scripts/benchmark.py
 	
 # lint, format, and check all files
 lint:
