@@ -472,3 +472,23 @@ def test_bioformats_dask_tiling_read(filename: str) -> None:
 
     np.testing.assert_array_equal(arr_tiled, arr_fullplane)
     np.testing.assert_array_equal(arr_tiled_set, arr_fullplane)
+
+
+def test_bioformats_dask_chunks_are_python_ints() -> None:
+    """
+    Ensure that the dask_data.chunks for a Bioformats-backed image are all
+    plain Python ints so that operations like dask.array.Array.map_overlap
+    do not fail the strict `type(c) is int` assertion in Dask.
+    """
+    uri = LOCAL_RESOURCES_DIR / "jint_typing.tiff"
+
+    bf = Reader(uri)
+    darr = bf.dask_data
+
+    # All chunk sizes must be native Python ints, not JPype JInt.
+    for axis_chunks in darr.chunks:
+        for c in axis_chunks:
+            assert type(c) is int
+
+    out = darr.map_overlap(lambda x: x, depth=1)
+    assert out.shape == darr.shape
