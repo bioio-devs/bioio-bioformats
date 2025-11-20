@@ -191,7 +191,8 @@ class BioFile:
         if series is not None:
             self._r.setSeries(series)
 
-        nt, nc, nz, ny, nx, nrgb = self.core_meta.shape
+        # Normalize to ints
+        nt, nc, nz, ny, nx, nrgb = map(int, self.core_meta.shape)
 
         if self.dask_tiles:
             chunks = utils._get_dask_tile_chunks(nt, nc, nz, ny, nx, self.tile_size)
