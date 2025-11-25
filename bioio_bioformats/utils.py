@@ -659,11 +659,29 @@ set JAVA_HOME=%CONDA_PREFIX%\\Library
 """
 
 
-def _try_get_loci() -> jpype.JPackage:
+def _try_get_loci(loglevel: str = "Error") -> jpype.JPackage:
+    """
+
+    Args:
+        loglevel (str, optional): Logging level for bioformats java library.
+        See here for further information:
+        https://bio-formats.readthedocs.io/en/latest/developers/logging.html
+        Defaults to "Error".
+
+    Raises:
+        RuntimeError: JVM is not found by jpype -> Check your scyjava installation.
+
+    Returns:
+        jpype.JPackage: Java package for working with bioformats
+    """
     try:
         scyjava.config.endpoints.append("ome:formats-gpl:6.7.0")
         scyjava.start_jvm()
         loci = jpype.JPackage("loci")
+
+        # get DebugTools, which is the logging library used by bioformats
+        DebugTools = loci.common.DebugTools
+        DebugTools.setRootLevel(loglevel)
         return loci
     except jpype.JVMNotFoundException as e:
         raise RuntimeError(JAVA_ERROR_MSG) from e
