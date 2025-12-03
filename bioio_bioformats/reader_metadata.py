@@ -144,6 +144,7 @@ class ReaderMetadata(bioio_base.reader_metadata.ReaderMetadata):
             ".qptiff",
             ".r3d",
             ".raw",
+            ".rcpnl",
             ".rec",
             ".scn",
             ".sdt",
