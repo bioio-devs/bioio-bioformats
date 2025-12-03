@@ -167,6 +167,13 @@ class Reader(reader.Reader):
             meta = rdr.ome_metadata
         return meta
 
+    @cached_property
+    def ome_xml(self) -> OME:
+        """Return OME-XML string from bioformats reader."""
+        with BioFile(self._path, **self._bf_kwargs) as rdr:  # type: ignore
+            xml = rdr.ome_xml
+        return xml
+
     @property
     def physical_pixel_sizes(self) -> types.PhysicalPixelSizes:
         """
@@ -191,7 +198,7 @@ class Reader(reader.Reader):
         ) as rdr:
             image_data = rdr.to_dask() if delayed else rdr.to_numpy()
             coords = utils.get_coords_from_ome(
-                ome=rdr.ome_metadata,
+                ome=self.ome_metadata,
                 scene_index=self.current_scene_index,
             )
 
@@ -204,8 +211,8 @@ class Reader(reader.Reader):
             ),
             coords=coords,
             attrs={
-                constants.METADATA_UNPROCESSED: rdr.ome_xml,
-                constants.METADATA_PROCESSED: rdr.ome_metadata,
+                constants.METADATA_UNPROCESSED: self.ome_xml,
+                constants.METADATA_PROCESSED: self.ome_metadata,
             },
         )
 
