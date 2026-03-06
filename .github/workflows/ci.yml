@@ -31,8 +31,9 @@ jobs:
           python-version: "3.x"
       - run: pip install check-manifest && check-manifest
 
-  # Check linting, formating, types, etc.
+  # Shared lint workflow from bioio-base
   lint:
+<<<<<<< HEAD
     runs-on: ubuntu-latest
 
     steps:
@@ -50,11 +51,14 @@ jobs:
         pip install .[lint]
     - name: Lint
       run: just lint
+=======
+    uses: bioio-devs/bioio-base/.github/workflows/shared_lint.yml@main
+>>>>>>> 3e0f0b7 (use shared lint and test)
   
-  # Check tests pass on multiple Python and OS combinations
+  # Shared test workflow from bioio-base
   test:
-    runs-on: ${{ matrix.os }}
     needs: [lint]
+<<<<<<< HEAD
     strategy:
       fail-fast: false
       matrix:
@@ -87,6 +91,14 @@ jobs:
       run: just test
     - name: Upload Codecov
       uses: codecov/codecov-action@v5
+=======
+    uses: bioio-devs/bioio-base/.github/workflows/shared_test.yml@main
+    with:
+      test_checkout_lfs: true
+      setup_java_windows: true
+      test_install_command: >-
+        python -m pip install --upgrade pip && pip install uv && uv pip install --system .[test]
+>>>>>>> 3e0f0b7 (use shared lint and test)
 
   # Check package performance
   benchmark:
