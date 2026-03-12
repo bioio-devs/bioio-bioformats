@@ -1,17 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from functools import cached_property
-from typing import Any, Dict, Optional, Tuple, Union
+from __future__ import annotations
 
+from contextlib import AbstractContextManager
+from functools import cached_property
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+
+import numpy as np
 import xarray as xr
 from bffile import BioFile
 from bioio_base import constants, dimensions, exceptions, io, reader, types
 from fsspec.implementations.local import LocalFileSystem
-from fsspec.spec import AbstractFileSystem
-from ome_types import OME
+from resource_backed_dask_array import ResourceBackedDaskArray
 
 from . import utils
+
+if TYPE_CHECKING:
+    from fsspec.spec import AbstractFileSystem
+    from ome_types import OME
 
 ###############################################################################
 
@@ -138,15 +145,6 @@ class Reader(reader.Reader):
                 self.__class__.__name__, self._path
             ) from e
 
-    def __getstate__(self) -> dict[str, Any]:
-        state = self.__dict__.copy()
-        state.pop("_bf", None)
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        self.__dict__.update(state)
-        self._bf = BioFile(self._path, **self._bf_kwargs)
-
     @property
     def scenes(self) -> Optional[Tuple[str, ...]]:
         return self._scenes
@@ -194,27 +192,31 @@ class Reader(reader.Reader):
         return utils.physical_pixel_sizes(self.metadata, self.current_scene_index)
 
     def _to_xarray(self, delayed: bool = True) -> xr.DataArray:
-        scene = self.current_scene_index
-        res = self._current_resolution_level
-
         with self._bf.ensure_open():
-            lazy_arr = self._bf.as_array(series=scene, resolution=res)
+            lazy_arr = data = self._bf.as_array(
+                series=self.current_scene_index,
+                resolution=self._current_resolution_level,
+            )
+            dims = lazy_arr.dims
+            coords = lazy_arr.coords
+
             if delayed:
                 if self._dask_tiles:
                     ts = self._tile_size or "auto"
-                    data = lazy_arr.to_dask(tile_size=ts)
+                    dask_arr = lazy_arr.to_dask(tile_size=ts)
                 else:
                     chunks: tuple[int, ...] = (1, 1, 1, -1, -1)
                     if lazy_arr.is_rgb:
                         chunks = chunks + (-1,)
-                    data = lazy_arr.to_dask(chunks=chunks)
-            else:
-                data = lazy_arr
+                    dask_arr = lazy_arr.to_dask(chunks=chunks)
+                data = ResourceBackedDaskArray.from_array(
+                    dask_arr, _BioFileContext(self._bf)
+                )
 
         return xr.DataArray(
             data,
-            dims=lazy_arr.dims,
-            coords=lazy_arr.coords,
+            dims=dims,
+            coords=coords,
             attrs={
                 constants.METADATA_UNPROCESSED: self.ome_xml,
                 constants.METADATA_PROCESSED: self.ome_metadata,
@@ -225,3 +227,21 @@ class Reader(reader.Reader):
     def bioformats_version() -> str:
         """The version of the bioformats_package.jar being used."""
         return BioFile.bioformats_version()
+
+
+class _BioFileContext(AbstractContextManager):
+    """Adapter giving ResourceBackedDaskArray open/close/closed semantics."""
+
+    def __init__(self, bf: BioFile) -> None:
+        self._bf = bf
+
+    @property
+    def closed(self) -> bool:
+        return self._bf.closed
+
+    def __enter__(self) -> BioFile:
+        self._bf.open()
+        return self._bf
+
+    def __exit__(self, *exc: object) -> None:
+        self._bf.close()

@@ -7,8 +7,6 @@ from bioio_base import types
 if TYPE_CHECKING:
     from ome_types import OME
 
-###############################################################################
-
 
 def physical_pixel_sizes(ome: OME, scene: int = 0) -> types.PhysicalPixelSizes:
     """

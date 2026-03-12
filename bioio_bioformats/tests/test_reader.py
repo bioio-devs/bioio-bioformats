@@ -106,8 +106,8 @@ from .conftest import LOCAL_RESOURCES_DIR
         ),
         (
             "RGB-8bit.czi",
-            "RGB-8bit.czi #1",
-            ("RGB-8bit.czi #1",),
+            "Series 0",
+            ("Series 0",),
             (1, 1, 1, 624, 924, 3),
             np.uint8,
             dimensions.DEFAULT_DIMENSION_ORDER_WITH_SAMPLES,
