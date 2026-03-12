@@ -21,21 +21,16 @@ Information about the base reader this package relies on can be found in the `bi
 **Stable Release:** `pip install bioio-bioformats`<br>
 **Development Head:** `pip install git+https://github.com/bioio-devs/bioio-bioformats.git`
 
-## Special Installation Instructions
+## Special Installation Note
 
-**This package utilizes bioformats which depends on java**
+This package relies on [bffile](https://github.com/imaging-formats/bffile),
+which uses [scyjava](https://github.com/scijava/scyjava) to fetch the
+Bio-Formats maven artifacts, and [cjdk](https://github.com/cachedjdk/cjdk) to
+fetch a Java runtime.  You do NOT need to install or setup java separately.
 
-To install java and maven with conda, run:
-
-`conda install -c conda-forge scyjava`
-
-You may need to deactivate/reactivate your environment after installing. If you are *still* getting a `JVMNotFoundException`, try setting `JAVA_HOME` as follows:
-
-#### Mac / Linux
-`export JAVA_HOME=$CONDA_PREFIX`
-
-#### Windows
-`set JAVA_HOME=%CONDA_PREFIX%\\Library`
+Read details in the [bffile
+README](https://github.com/imaging-formats/bffile?tab=readme-ov-file#selecting-bio-formats-version)
+on how to select the Bio-Formats version or Java runtime version if you need to.
 
 ## Example Usage (see full documentation for more examples)
 

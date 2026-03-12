@@ -4,34 +4,21 @@
 from functools import cached_property
 from typing import Any, Dict, Optional, Tuple, Union
 
+import numpy as np
 import xarray as xr
+from bffile import BioFile
 from bioio_base import constants, dimensions, exceptions, io, reader, types
 from fsspec.implementations.local import LocalFileSystem
 from fsspec.spec import AbstractFileSystem
 from ome_types import OME
 
 from . import utils
-from .biofile import BioFile
 
 ###############################################################################
 
 
 class Reader(reader.Reader):
     """Read files using bioformats.
-
-    This reader requires `bioformats_jar` to be installed in the environment, and
-    requires the java executable to be available on the path (or via the JAVA_HOME
-    environment variable), along with the `mvn` executable.
-
-    To install java and maven with conda, run `conda install -c conda-forge scyjava`.
-    You may need to deactivate/reactivate your environment after installing.  If you
-    are *still* getting a `JVMNotFoundException`, try setting JAVA_HOME as follows:
-
-        # mac and linux:
-        export JAVA_HOME=$CONDA_PREFIX
-
-        # windows:
-        set JAVA_HOME=%CONDA_PREFIX%\\Library
 
     Parameters
     ----------
@@ -79,6 +66,7 @@ class Reader(reader.Reader):
     _metadata: Optional[Any] = None
     _scenes: Optional[Tuple[str, ...]] = None
     _current_scene_index: int = 0
+    _current_resolution_level: int = 0
     # Do not provide default value because
     # they may not need to be used by your reader (i.e. input param is an array)
     _fs: "AbstractFileSystem"
@@ -94,8 +82,8 @@ class Reader(reader.Reader):
         """
         try:
             if isinstance(fs, LocalFileSystem):
-                f = BioFile(path, meta=False, memoize=False)
-                f.close()
+                with BioFile(path, meta=False):
+                    pass
                 return True
             raise exceptions.UnsupportedFileFormatError(
                 reader_name="bioformats ",
@@ -113,7 +101,7 @@ class Reader(reader.Reader):
         *,
         original_meta: bool = False,
         memoize: Union[int, bool] = 0,
-        options: Dict[str, bool] = {},
+        options: Optional[Dict[str, bool]] = None,
         dask_tiles: bool = False,
         tile_size: Optional[Tuple[int, int]] = None,
         fs_kwargs: Dict[str, Any] = {},
@@ -130,19 +118,20 @@ class Reader(reader.Reader):
                 f"Received URI: {self._path}, which points to {type(self._fs)}."
             )
 
-        self._bf_kwargs = {
-            "options": options,
+        self._bf_kwargs: dict[str, Any] = {
             "original_meta": original_meta,
             "memoize": memoize,
-            "dask_tiles": dask_tiles,
-            "tile_size": tile_size,
         }
+        if options:
+            self._bf_kwargs["options"] = options
+
+        self._dask_tiles = dask_tiles
+        self._tile_size = tile_size
+
         try:
-            with BioFile(self._path, **self._bf_kwargs) as rdr:  # type: ignore
-                md = rdr._r.getMetadataStore()
-                self._scenes: Tuple[str, ...] = tuple(
-                    str(md.getImageName(i)) for i in range(md.getImageCount())
-                )
+            self._bf = BioFile(self._path, **self._bf_kwargs)
+            with self._bf.ensure_open():
+                self._scenes = tuple(series.name for series in self._bf)
         except RuntimeError:
             raise
         except Exception as e:
@@ -150,9 +139,25 @@ class Reader(reader.Reader):
                 self.__class__.__name__, self._path
             ) from e
 
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        state.pop("_bf", None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self._bf = BioFile(self._path, **self._bf_kwargs)
+
     @property
     def scenes(self) -> Optional[Tuple[str, ...]]:
         return self._scenes
+
+    @property
+    def resolution_levels(self) -> Tuple[int, ...]:
+        """Return available resolution levels for the current scene."""
+        with self._bf.ensure_open():
+            meta = self._bf.core_metadata(series=self.current_scene_index)
+        return tuple(range(meta.resolution_count))
 
     def _read_delayed(self) -> xr.DataArray:
         return self._to_xarray(delayed=True)
@@ -160,19 +165,18 @@ class Reader(reader.Reader):
     def _read_immediate(self) -> xr.DataArray:
         return self._to_xarray(delayed=False)
 
+    # note: bffile also caches this... so this is not strictly necessary
     @cached_property
     def ome_metadata(self) -> OME:
         """Return OME object parsed by ome_types."""
-        with BioFile(self._path, **self._bf_kwargs) as rdr:  # type: ignore
-            meta = rdr.ome_metadata
-        return meta
+        with self._bf.ensure_open():
+            return self._bf.ome_metadata
 
     @cached_property
-    def ome_xml(self) -> OME:
+    def ome_xml(self) -> str:
         """Return OME-XML string from bioformats reader."""
-        with BioFile(self._path, **self._bf_kwargs) as rdr:  # type: ignore
-            xml = rdr.ome_xml
-        return xml
+        with self._bf.ensure_open():
+            return self._bf.ome_xml
 
     @property
     def physical_pixel_sizes(self) -> types.PhysicalPixelSizes:
@@ -191,22 +195,48 @@ class Reader(reader.Reader):
         return utils.physical_pixel_sizes(self.metadata, self.current_scene_index)
 
     def _to_xarray(self, delayed: bool = True) -> xr.DataArray:
-        with BioFile(
-            self._path,
-            series=self.current_scene_index,
-            **self._bf_kwargs,  # type: ignore
-        ) as rdr:
-            image_data = rdr.to_dask() if delayed else rdr.to_numpy()
-            coords = utils.get_coords_from_ome(
-                ome=self.ome_metadata,
-                scene_index=self.current_scene_index,
-            )
+        scene = self.current_scene_index
+        res = self._current_resolution_level
+
+        if delayed:
+            with self._bf.ensure_open():
+                is_rgb = self._bf.core_metadata(
+                    series=scene, resolution=res
+                ).is_rgb
+                if self._dask_tiles:
+                    ts = self._tile_size or "auto"
+                    image_data = self._bf.to_dask(
+                        series=scene, resolution=res, tile_size=ts
+                    )
+                else:
+                    chunks: tuple[int, ...] = (1, 1, 1, -1, -1)
+                    if is_rgb:
+                        chunks = chunks + (-1,)
+                    image_data = self._bf.to_dask(
+                        series=scene, resolution=res, chunks=chunks
+                    )
+        else:
+            with self._bf.ensure_open():
+                is_rgb = self._bf.core_metadata(
+                    series=scene, resolution=res
+                ).is_rgb
+                image_data = np.asarray(
+                    self._bf.as_array(series=scene, resolution=res)
+                )
+
+        # For sub-resolutions, pass actual shape so coords are sized correctly
+        shape = image_data.shape if res > 0 else None
+        coords = utils.get_coords_from_ome(
+            ome=self.ome_metadata,
+            scene_index=scene,
+            image_shape=shape,
+        )
 
         return xr.DataArray(
             image_data,
             dims=(
                 dimensions.DEFAULT_DIMENSION_ORDER_LIST_WITH_SAMPLES
-                if rdr.core_meta.is_rgb
+                if is_rgb
                 else dimensions.DEFAULT_DIMENSION_ORDER_LIST
             ),
             coords=coords,
@@ -219,4 +249,4 @@ class Reader(reader.Reader):
     @staticmethod
     def bioformats_version() -> str:
         """The version of the bioformats_package.jar being used."""
-        return utils._try_get_loci().__version__
+        return BioFile.bioformats_version()

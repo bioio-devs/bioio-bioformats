@@ -7,7 +7,6 @@ from ome_types import OME
 
 from bioio_bioformats import Reader
 
-from ..biofile import BioFile
 from .conftest import LOCAL_RESOURCES_DIR
 
 
@@ -93,11 +92,11 @@ from .conftest import LOCAL_RESOURCES_DIR
         ),
         (
             "s_3_t_1_c_3_z_5.czi",
-            "s_3_t_1_c_3_z_5.czi #1",
+            "Scene #1",
             (
-                "s_3_t_1_c_3_z_5.czi #1",
-                "s_3_t_1_c_3_z_5.czi #2",
-                "s_3_t_1_c_3_z_5.czi #3",
+                "Scene #1",
+                "Scene #2",
+                "Scene #3",
             ),
             (1, 3, 5, 325, 475),
             np.uint16,
@@ -198,7 +197,7 @@ from .conftest import LOCAL_RESOURCES_DIR
             (1, 3, 1, 1024, 1024),
             np.uint16,
             dimensions.DEFAULT_DIMENSION_ORDER,
-            ["Channel:0:0", "Channel:0:1", "Channel:0:2"],
+            ["Red", "Green", "Blue"],
             (0.001, 1.2059374999999999, 1.2059570312500014),
         ),
         (
@@ -213,8 +212,8 @@ from .conftest import LOCAL_RESOURCES_DIR
         ),
         (
             "DICOM_samples_MR-MONO2-8-16x-heart.dcm",
-            "Series 0",
-            ("Series 0",),
+            "PRIMARY",
+            ("PRIMARY",),
             (1, 1, 16, 256, 256),
             np.uint8,
             dimensions.DEFAULT_DIMENSION_ORDER,
@@ -384,10 +383,10 @@ def test_bioformats_reader_large_files(
         ),
         (
             "S=2_4x2_T=2=Z=3_CH=2.czi",
-            "S=2_4x2_T=2=Z=3_CH=2.czi #1",
-            (2, 2, 3, 488, 948),
-            "S=2_4x2_T=2=Z=3_CH=2.czi #2",
-            (2, 2, 3, 244, 474),
+            "TR1",
+            (2, 2, 3, 487, 947),
+            "TR2",
+            (2, 2, 3, 486, 947),
         ),
     ],
 )
@@ -415,14 +414,28 @@ def test_multi_scene_bioformats_reader(
     )
 
 
-def test_biofile_scene_change() -> None:
-    """Make sure that ResourceBackedDaskArray doesn't close an opened file."""
-    uri = LOCAL_RESOURCES_DIR / "ND2_dims_p4z5t3c2y32x32.nd2"
-    f = BioFile(uri)
-    assert isinstance(f.to_dask().compute(), np.ndarray)
-    f.set_series(1)
-    assert isinstance(f.to_dask().compute(), np.ndarray)
-    f.close()
+def test_resolution_levels() -> None:
+    """Test that resolution levels are properly exposed and readable."""
+    uri = LOCAL_RESOURCES_DIR / "S=2_4x2_T=2=Z=3_CH=2.czi"
+    reader = Reader(uri)
+
+    # Scene "TR1" has 2 resolution levels
+    reader.set_scene("TR1")
+    assert reader.resolution_levels == (0, 1)
+    assert reader.shape == (2, 2, 3, 487, 947)
+
+    reader.set_resolution_level(1)
+    assert reader.current_resolution_level == 1
+    assert reader.shape == (2, 2, 3, 243, 473)
+
+    # Scene "TR2" also has 2 resolution levels
+    reader.set_scene("TR2")
+    reader.set_resolution_level(0)
+    assert reader.resolution_levels == (0, 1)
+    assert reader.shape == (2, 2, 3, 486, 947)
+
+    reader.set_resolution_level(1)
+    assert reader.shape == (2, 2, 3, 243, 473)
 
 
 @pytest.mark.parametrize("filename, ", ["CMU-1-Small-Region.svs"])
