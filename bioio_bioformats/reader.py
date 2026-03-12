@@ -4,7 +4,6 @@
 from functools import cached_property
 from typing import Any, Dict, Optional, Tuple, Union
 
-import numpy as np
 import xarray as xr
 from bffile import BioFile
 from bioio_base import constants, dimensions, exceptions, io, reader, types
@@ -198,48 +197,24 @@ class Reader(reader.Reader):
         scene = self.current_scene_index
         res = self._current_resolution_level
 
-        if delayed:
-            with self._bf.ensure_open():
-                is_rgb = self._bf.core_metadata(
-                    series=scene, resolution=res
-                ).is_rgb
+        with self._bf.ensure_open():
+            lazy_arr = self._bf.as_array(series=scene, resolution=res)
+            if delayed:
                 if self._dask_tiles:
                     ts = self._tile_size or "auto"
-                    image_data = self._bf.to_dask(
-                        series=scene, resolution=res, tile_size=ts
-                    )
+                    data = lazy_arr.to_dask(tile_size=ts)
                 else:
                     chunks: tuple[int, ...] = (1, 1, 1, -1, -1)
-                    if is_rgb:
+                    if lazy_arr.is_rgb:
                         chunks = chunks + (-1,)
-                    image_data = self._bf.to_dask(
-                        series=scene, resolution=res, chunks=chunks
-                    )
-        else:
-            with self._bf.ensure_open():
-                is_rgb = self._bf.core_metadata(
-                    series=scene, resolution=res
-                ).is_rgb
-                image_data = np.asarray(
-                    self._bf.as_array(series=scene, resolution=res)
-                )
-
-        # For sub-resolutions, pass actual shape so coords are sized correctly
-        shape = image_data.shape if res > 0 else None
-        coords = utils.get_coords_from_ome(
-            ome=self.ome_metadata,
-            scene_index=scene,
-            image_shape=shape,
-        )
+                    data = lazy_arr.to_dask(chunks=chunks)
+            else:
+                data = lazy_arr
 
         return xr.DataArray(
-            image_data,
-            dims=(
-                dimensions.DEFAULT_DIMENSION_ORDER_LIST_WITH_SAMPLES
-                if is_rgb
-                else dimensions.DEFAULT_DIMENSION_ORDER_LIST
-            ),
-            coords=coords,
+            data,
+            dims=lazy_arr.dims,
+            coords=lazy_arr.coords,
             attrs={
                 constants.METADATA_UNPROCESSED: self.ome_xml,
                 constants.METADATA_PROCESSED: self.ome_metadata,
