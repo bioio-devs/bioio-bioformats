@@ -38,7 +38,7 @@ jobs:
     # Shared test workflow from bioio-base
   test:
     needs: [lint]
-    uses: bioio-devs/bioio-base/.github/workflows/shared_test.yml@feature/shared-ci-simplify
+    uses: bioio-devs/bioio-base/.github/workflows/shared_test.yml@main
     with:
       bioformats_test: true
 
