@@ -33,7 +33,8 @@ dependencies = [
   "fsspec>=2022.8.0",
   "numpy>=1.21",
   "ome-types>=0.3.4",
-  "resource-backed-dask-array>=0.1.0"
+  "resource-backed-dask-array>=0.1.0",
+  "scyjava"
 ]
 
 [project.urls]
