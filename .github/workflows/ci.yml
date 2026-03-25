@@ -40,10 +40,7 @@ jobs:
     needs: [lint]
     uses: bioio-devs/bioio-base/.github/workflows/shared_test.yml@main
     with:
-      test_checkout_lfs: true
-      setup_java_windows: true
-      test_install_command: >-
-        python -m pip install --upgrade pip && pip install uv && uv pip install --system .[test]
+      bioformats_test: true
 
   # Check package performance
   benchmark:
