@@ -35,6 +35,7 @@ dependencies = [
   "ome-types>=0.3.4",
   "bffile>=0.1.1",
   "resource-backed-dask-array>=0.1.0",
+  "scyjava"
 ]
 
 [project.urls]
