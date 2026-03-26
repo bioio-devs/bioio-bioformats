@@ -106,3 +106,4 @@ ENV/
 
 # VSCode
 .vscode
+uv.lock
