@@ -13,7 +13,7 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with: 
         lfs: true # For test files
     - name: Set up Python
@@ -26,7 +26,7 @@ jobs:
       with:
         distribution: temurin
         java-version: 17
-    - uses: extractions/setup-just@v3
+    - uses: extractions/setup-just@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Install Dependencies
