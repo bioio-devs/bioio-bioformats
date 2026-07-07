@@ -438,7 +438,7 @@ def test_resolution_levels() -> None:
     assert reader.shape == (2, 2, 3, 243, 473)
 
 
-@pytest.mark.parametrize("filename, ", ["CMU-1-Small-Region.svs"])
+@pytest.mark.parametrize("filename", ["CMU-1-Small-Region.svs"])
 def test_bioformats_dask_tiling_shapes(filename: str) -> None:
     # Construct full filepath
     uri = LOCAL_RESOURCES_DIR / filename
@@ -464,10 +464,10 @@ def test_bioformats_dask_tiling_shapes(filename: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "filename, ",
+    "filename",
     [
-        ("s_1_t_1_c_10_z_1.ome.tiff"),
-        #  ("CMU-1-Small-Region.svs")
+        "s_1_t_1_c_10_z_1.ome.tiff",
+        #  "CMU-1-Small-Region.svs"
     ],
 )
 def test_bioformats_dask_tiling_read(filename: str) -> None:
